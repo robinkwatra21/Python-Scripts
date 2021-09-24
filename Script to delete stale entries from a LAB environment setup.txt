@@ -1,0 +1,68 @@
+# <*******************
+#
+# Copyright 2021 Juniper Networks, Inc. All rights reserved.
+# Licensed under the Juniper Networks Script Software License (the "License").
+# You may not use this script file except in compliance with the License, which is located at
+# http://www.juniper.net/support/legal/scriptlicense/
+# Unless required by applicable law or otherwise agreed to in writing by the parties, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# *******************>
+#
+# ===============================================================
+# Script to delete stale entries from a LAB environment setup.
+# ===============================================================
+#
+# Version: 1.0
+# Date   : 2021-05-17 (last updated date)
+# Editor : Maintained by CFTS team.
+# contact: rkwatra@juniper.net
+#
+# ---------------------------------------------------------------
+# Revision History
+# __________________________________________________
+#| Date | Version | Comments |
+#|--------------------------------------------------|
+#| 2021-05-17 | 1.0 | Initial Draft |
+#|__________________________________________________|
+# ---------------------------------------------------------------
+# ---------------------------------------------------------------
+# Usage Instructions
+# ---------------------------------------------------------------
+#
+# 1. This script has to be run inside the "contrail-vrouter-agent" container as a root user. Navigate to the container as below:
+#     docker exec -it -e COLUMNS=$COLUMNS -e LINES=$LINES "Container ID" bash
+#
+# 2. To execute this script type: python remove_stale_entries.py
+#
+# 3. Rename the provided file "Computename_UUID_Entries.txt" file to "UUID_Entries.txt" file and place it under script location
+#
+#   Note: Ensure "remove_stale_entries.py" and UUID_Entries.txt" file should be kept under same location while running python script.
+#
+#
+# Check the script is being used properly
+#
+## Script Content       ##
+import os                       # Importing os module which contains os.system function to Run a Command
+import time
+n = 1                           # Initializing Counters
+success = 0                     # Variable to capture output from Shell stream.
+initial = 0                     # Variable to capture output from Shell stream.
+final = 0                       # Variable to capture output from Shell stream.
+myfile = open("UUID_Entries.txt","r")
+list = myfile.readlines()
+stream = os.popen("cd /var/lib/contrail/ports/ ; ls -l | wc -l")
+initial = stream.read()
+print("Initial nubmer of entries in /var/lib/contrail/ports = {}".format(initial))
+time.sleep(3)
+for i in list:
+    print(" .Deleting the port with UUID ".format(n,i))
+    stream = os.popen("vrouter-port-control --oper=delete --uuid={}".format(i))
+    success = stream.read()
+    n = n + 1
+stream = os.popen("cd /var/lib/contrail/ports/ ; ls -l | wc -l")
+final = stream.read()
+print("Initial nubmer of entries in /var/lib/contrail/ports = {}\n".format(initial))
+print("Initial nubmer of entries in /var/lib/contrail/ports = {}".format(final))
+myfile.close()
+## End of Script Content        ##
